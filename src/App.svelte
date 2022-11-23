@@ -1,45 +1,72 @@
+<button
+  on:click={() => {
+    workarounds = !workarounds
+  }}
+>
+  {workarounds ? 'Disable' : 'Enable'} workarounds
+</button>
+
+<ul class:workarounds>
+  <li data-i="0">0. No problems when we use a div directly instead of Component</li>
+  <Item data-i="1">1. Only a problem when using a Component instead of a div.</Item>
+  <Item data-i="2">2. Workaround 1: don't use &amp;.</Item>
+  <Item data-i="3">
+    3. Workaround 2: Use :global {'{}'} from svelte-preprocess
+  </Item>
+</ul>
+
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
+  import Item from './lib/Item.svelte'
+
+  let workarounds = false
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer"> 
-      <img src="/vite.svg" class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer"> 
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
-
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
+<style lang="scss">
+  ul {
+    --green: #1bb133;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+
+  :global(li) {
+    // Adding pseudo-classes to the outer selector works fine -- Svelte does not add a suffix to isolate it
+    /*
+    &:hover {
+      background-color: yellow !important;
+    }
+    */
+
+    &[data-i='0'] {
+      background-color: var(--green);
+    }
+    // Without :global it warns "Unused CSS selector" and removes it.
+    // With :global it outputs incorrect output (preserves "&" as-is):
+    //   li&[data-i='1'] {
+    // instead of this:
+    //   li[data-i='1']
+    :global(&[data-i='1']) {
+      background-color: var(--green);
+    }
+    &[data-i='2'] {
+      background-color: var(--green);
+    }
+    &[data-i='3'] {
+      background-color: var(--green);
+    }
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
+
+  // Workaround 1: Don't use &
+  :global(.workarounds li[data-i='1']) {
+    background-color: var(--green);
   }
-  .read-the-docs {
-    color: #888;
+  :global(.workarounds li[data-i='2']) {
+    background-color: var(--green);
+  }
+
+  // Workaround 2: Use :global {} from svelte-preprocess
+  :global {
+    .workarounds li {
+      &[data-i='3'] {
+        background-color: var(--green);
+      }
+    }
   }
 </style>
